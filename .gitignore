@@ -116,3 +116,4 @@ examples/merged_*.arxml
 # Test output
 test_output/
 *.log
+**.DS_Store
