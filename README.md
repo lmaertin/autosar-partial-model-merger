@@ -77,14 +77,7 @@ python -m arxml_merger.cli -i model*.arxml -o merged.arxml --log-level DEBUG --l
 
 ## 🔧 Supported AUTOSAR Versions
 
-| Version | Namespace URI | Status |
-|---------|---------------|---------|
-| 4.0.x   | `http://autosar.org/schema/r4.0` | ✅ Full support |
-| 4.1.x   | `http://autosar.org/schema/r4.0` | ✅ Full support |
-| 4.2.x   | `http://autosar.org/schema/r4.0` | ✅ Full support |
-| 4.3.x   | `http://autosar.org/schema/r4.0` | ✅ Full support |
-| 4.4.x   | `http://autosar.org/schema/r4.0` | ✅ Full support |
-| 4.5.x   | `http://autosar.org/schema/r4.0` | ✅ Full support |
+> **Note**: AUTOSAR 4.5 does not exist. The AUTOSAR consortium moved from version 4.4 directly to the new year-month naming convention starting with 20-11 (November 2020).
 
 ## ⚙️ Conflict Resolution
 

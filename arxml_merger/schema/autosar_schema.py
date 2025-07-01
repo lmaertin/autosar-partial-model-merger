@@ -1,11 +1,14 @@
 """
 Schema-specific implementations for AUTOSAR versions
 
-Supported AUTOSAR versions:
-- 4.0.x, 4.1.x, 4.2.x (legacy versions)
-- 4.3.1+ (minimum supported version)
-- 4.4.x (last of 4.x series)
-- 20-11, 21-11, 22-11, 23-11, 24-11 (new naming convention)
+Supported AUTOSAR versions (4.3.1 to 24-11):
+- 4.0.x, 4.1.x, 4.2.x (legacy versions - basic support)
+- 4.3.1+ (minimum recommended version - full feature support)
+- 4.4.x (last of the 4.x series)
+- 20-11, 21-11, 22-11, 23-11, 24-11 (modern AUTOSAR releases)
+
+Note: AUTOSAR 4.5 does not exist. The series jumped from 4.4 to the new 
+year-month naming convention starting with 20-11.
 """
 
 from typing import Dict, List, Set, Optional, Tuple
