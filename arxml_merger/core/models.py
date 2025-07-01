@@ -26,6 +26,7 @@ class MergeConfig:
     preserve_comments: bool = True
     preserve_formatting: bool = False
     output_encoding: str = "utf-8"
+    verbose_merge: bool = False
     namespace_prefixes: Dict[str, str] = field(default_factory=dict)
     custom_split_keys: Dict[str, List[str]] = field(default_factory=dict)
     ignore_elements: List[str] = field(default_factory=list)

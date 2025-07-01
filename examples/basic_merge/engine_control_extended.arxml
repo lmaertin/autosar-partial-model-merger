@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_19-11.xsd">
+    <AR-PACKAGES>
+        <AR-PACKAGE UUID="12345678-1234-1234-1234-123456789ABC">
+            <SHORT-NAME>ComponentTypes</SHORT-NAME>
+            <ELEMENTS>
+                <APPLICATION-SW-COMPONENT-TYPE UUID="AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA">
+                    <SHORT-NAME>EngineControl</SHORT-NAME>
+                    <CATEGORY>APPLICATION_LAYER</CATEGORY>
+                    <PORTS>
+                        <P-PORT-PROTOTYPE UUID="BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB">
+                            <SHORT-NAME>RPMOutput</SHORT-NAME>
+                            <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/RPMInterface</PROVIDED-INTERFACE-TREF>
+                        </P-PORT-PROTOTYPE>
+                        <R-PORT-PROTOTYPE UUID="CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC">
+                            <SHORT-NAME>ThrottleInput</SHORT-NAME>
+                            <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/ThrottleInterface</REQUIRED-INTERFACE-TREF>
+                        </R-PORT-PROTOTYPE>
+                        <R-PORT-PROTOTYPE UUID="88888888-8888-8888-8888-888888888888">
+                            <SHORT-NAME>SpeedInput</SHORT-NAME>
+                            <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/SpeedInterface</REQUIRED-INTERFACE-TREF>
+                        </R-PORT-PROTOTYPE>
+                    </PORTS>
+                    <INTERNAL-BEHAVIORS>
+                        <SWC-INTERNAL-BEHAVIOR UUID="DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD">
+                            <SHORT-NAME>EngineControlBehavior</SHORT-NAME>
+                            <EVENTS>
+                                <DATA-RECEIVED-EVENT UUID="99999999-9999-9999-9999-999999999999">
+                                    <SHORT-NAME>ThrottleDataReceived</SHORT-NAME>
+                                    <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/ComponentTypes/EngineControl/EngineControlBehavior/ProcessThrottle</START-ON-EVENT-REF>
+                                    <DATA-IREF>
+                                        <CONTEXT-R-PORT-REF DEST="R-PORT-PROTOTYPE">/ComponentTypes/EngineControl/ThrottleInput</CONTEXT-R-PORT-REF>
+                                        <TARGET-DATA-ELEMENT-REF DEST="VARIABLE-DATA-PROTOTYPE">/Interfaces/ThrottleInterface/ThrottleValue</TARGET-DATA-ELEMENT-REF>
+                                    </DATA-IREF>
+                                </DATA-RECEIVED-EVENT>
+                            </EVENTS>
+                            <RUNNABLES>
+                                <RUNNABLE-ENTITY UUID="AAAABBBB-CCCC-DDDD-EEEE-FFFFAAAABBBB">
+                                    <SHORT-NAME>ProcessThrottle</SHORT-NAME>
+                                    <MINIMUM-START-INTERVAL>0.01</MINIMUM-START-INTERVAL>
+                                    <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                                </RUNNABLE-ENTITY>
+                            </RUNNABLES>
+                        </SWC-INTERNAL-BEHAVIOR>
+                    </INTERNAL-BEHAVIORS>
+                </APPLICATION-SW-COMPONENT-TYPE>
+            </ELEMENTS>
+        </AR-PACKAGE>
+        <AR-PACKAGE UUID="23456789-2345-2345-2345-23456789ABCD">
+            <SHORT-NAME>Interfaces</SHORT-NAME>
+            <ELEMENTS>
+                <SENDER-RECEIVER-INTERFACE UUID="EEEEEEEE-EEEE-EEEE-EEEE-EEEEEEEEEEEE">
+                    <SHORT-NAME>RPMInterface</SHORT-NAME>
+                    <IS-SERVICE>false</IS-SERVICE>
+                    <DATA-ELEMENTS>
+                        <VARIABLE-DATA-PROTOTYPE UUID="FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF">
+                            <SHORT-NAME>RPMValue</SHORT-NAME>
+                            <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/UInt16</TYPE-TREF>
+                        </VARIABLE-DATA-PROTOTYPE>
+                    </DATA-ELEMENTS>
+                </SENDER-RECEIVER-INTERFACE>
+                <SENDER-RECEIVER-INTERFACE UUID="AABBCCDD-AABB-CCDD-EEFF-AABBCCDDEEFF">
+                    <SHORT-NAME>SpeedInterface</SHORT-NAME>
+                    <IS-SERVICE>false</IS-SERVICE>
+                    <DATA-ELEMENTS>
+                        <VARIABLE-DATA-PROTOTYPE UUID="DDEEFFAA-BBCC-DDEE-FFAA-BBCCDDEEFFAA">
+                            <SHORT-NAME>SpeedValue</SHORT-NAME>
+                            <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/UInt8</TYPE-TREF>
+                        </VARIABLE-DATA-PROTOTYPE>
+                    </DATA-ELEMENTS>
+                </SENDER-RECEIVER-INTERFACE>
+            </ELEMENTS>
+        </AR-PACKAGE>
+        <AR-PACKAGE UUID="34567890-3456-3456-3456-34567890ABCD">
+            <SHORT-NAME>DataTypes</SHORT-NAME>
+            <ELEMENTS>
+                <IMPLEMENTATION-DATA-TYPE UUID="33333333-3333-3333-3333-333333333333">
+                    <SHORT-NAME>UInt16</SHORT-NAME>
+                    <CATEGORY>PRIMITIVE</CATEGORY>
+                    <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                            <SW-DATA-DEF-PROPS-CONDITIONAL>
+                                <BASE-TYPE-ENCODING>NONE</BASE-TYPE-ENCODING>
+                                <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                            </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                    </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+                <IMPLEMENTATION-DATA-TYPE UUID="55555555-5555-5555-5555-555555555555">
+                    <SHORT-NAME>UInt8</SHORT-NAME>
+                    <CATEGORY>PRIMITIVE</CATEGORY>
+                    <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                            <SW-DATA-DEF-PROPS-CONDITIONAL>
+                                <BASE-TYPE-ENCODING>NONE</BASE-TYPE-ENCODING>
+                                <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                            </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                    </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+            </ELEMENTS>
+        </AR-PACKAGE>
+        <AR-PACKAGE UUID="45678901-4567-4567-4567-45678901ABCD">
+            <SHORT-NAME>Systems</SHORT-NAME>
+            <ELEMENTS>
+                <SYSTEM UUID="66666666-6666-6666-6666-666666666666">
+                    <SHORT-NAME>EngineManagementSystem</SHORT-NAME>
+                    <CATEGORY>SYSTEM_EXTRACT</CATEGORY>
+                    <MAPPINGS>
+                        <SYSTEM-MAPPING UUID="77777777-7777-7777-7777-777777777777">
+                            <SHORT-NAME>SystemMapping</SHORT-NAME>
+                            <SW-MAPPINGS>
+                                <SWC-TO-ECU-MAPPING UUID="88888888-8888-8888-8888-888888888888">
+                                    <SHORT-NAME>EngineControlMapping</SHORT-NAME>
+                                    <COMPONENT-IREFS>
+                                        <COMPONENT-IREF>
+                                            <CONTEXT-COMPOSITION-REF DEST="ROOT-SW-COMPOSITION-PROTOTYPE">/Systems/EngineManagementSystem/RootComposition</CONTEXT-COMPOSITION-REF>
+                                            <TARGET-COMPONENT-REF DEST="SW-COMPONENT-PROTOTYPE">/ComponentTypes/EngineControl</TARGET-COMPONENT-REF>
+                                        </COMPONENT-IREF>
+                                    </COMPONENT-IREFS>
+                                    <ECU-INSTANCE-REF DEST="ECU-INSTANCE">/HW/ECU1</ECU-INSTANCE-REF>
+                                </SWC-TO-ECU-MAPPING>
+                            </SW-MAPPINGS>
+                        </SYSTEM-MAPPING>
+                    </MAPPINGS>
+                </SYSTEM>
+            </ELEMENTS>
+        </AR-PACKAGE>
+    </AR-PACKAGES>
+</AUTOSAR>

@@ -109,9 +109,14 @@ dmypy.json
 # JetBrains IDEs
 .idea/
 
-# Examples output
+# Examples output - ignore all generated files
+examples/generated/
 examples/*.arxml
 examples/merged_*.arxml
+examples/test_*.arxml
+examples/cli_demo_*.arxml
+examples/engine_control_*.arxml
+examples/sensor_*.arxml
 
 # Test output
 test_output/

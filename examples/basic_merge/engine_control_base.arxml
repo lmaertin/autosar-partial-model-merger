@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_19-11.xsd">
+    <AR-PACKAGES>
+        <AR-PACKAGE UUID="12345678-1234-1234-1234-123456789ABC">
+            <SHORT-NAME>ComponentTypes</SHORT-NAME>
+            <ELEMENTS>
+                <APPLICATION-SW-COMPONENT-TYPE UUID="AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA">
+                    <SHORT-NAME>EngineControl</SHORT-NAME>
+                    <CATEGORY>APPLICATION_LAYER</CATEGORY>
+                    <PORTS>
+                        <P-PORT-PROTOTYPE UUID="BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB">
+                            <SHORT-NAME>RPMOutput</SHORT-NAME>
+                            <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/RPMInterface</PROVIDED-INTERFACE-TREF>
+                        </P-PORT-PROTOTYPE>
+                        <R-PORT-PROTOTYPE UUID="CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC">
+                            <SHORT-NAME>ThrottleInput</SHORT-NAME>
+                            <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/ThrottleInterface</REQUIRED-INTERFACE-TREF>
+                        </R-PORT-PROTOTYPE>
+                    </PORTS>
+                    <INTERNAL-BEHAVIORS>
+                        <SWC-INTERNAL-BEHAVIOR UUID="DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD">
+                            <SHORT-NAME>EngineControlBehavior</SHORT-NAME>
+                        </SWC-INTERNAL-BEHAVIOR>
+                    </INTERNAL-BEHAVIORS>
+                </APPLICATION-SW-COMPONENT-TYPE>
+            </ELEMENTS>
+        </AR-PACKAGE>
+        <AR-PACKAGE UUID="23456789-2345-2345-2345-23456789ABCD">
+            <SHORT-NAME>Interfaces</SHORT-NAME>
+            <ELEMENTS>
+                <SENDER-RECEIVER-INTERFACE UUID="EEEEEEEE-EEEE-EEEE-EEEE-EEEEEEEEEEEE">
+                    <SHORT-NAME>RPMInterface</SHORT-NAME>
+                    <IS-SERVICE>false</IS-SERVICE>
+                    <DATA-ELEMENTS>
+                        <VARIABLE-DATA-PROTOTYPE UUID="FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF">
+                            <SHORT-NAME>RPMValue</SHORT-NAME>
+                            <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/UInt16</TYPE-TREF>
+                        </VARIABLE-DATA-PROTOTYPE>
+                    </DATA-ELEMENTS>
+                </SENDER-RECEIVER-INTERFACE>
+                <SENDER-RECEIVER-INTERFACE UUID="11111111-1111-1111-1111-111111111111">
+                    <SHORT-NAME>ThrottleInterface</SHORT-NAME>
+                    <IS-SERVICE>false</IS-SERVICE>
+                    <DATA-ELEMENTS>
+                        <VARIABLE-DATA-PROTOTYPE UUID="22222222-2222-2222-2222-222222222222">
+                            <SHORT-NAME>ThrottleValue</SHORT-NAME>
+                            <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/UInt8</TYPE-TREF>
+                        </VARIABLE-DATA-PROTOTYPE>
+                    </DATA-ELEMENTS>
+                </SENDER-RECEIVER-INTERFACE>
+            </ELEMENTS>
+        </AR-PACKAGE>
+        <AR-PACKAGE UUID="34567890-3456-3456-3456-34567890ABCD">
+            <SHORT-NAME>DataTypes</SHORT-NAME>
+            <ELEMENTS>
+                <IMPLEMENTATION-DATA-TYPE UUID="33333333-3333-3333-3333-333333333333">
+                    <SHORT-NAME>UInt16</SHORT-NAME>
+                    <CATEGORY>PRIMITIVE</CATEGORY>
+                    <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                            <SW-DATA-DEF-PROPS-CONDITIONAL>
+                                <BASE-TYPE-ENCODING>NONE</BASE-TYPE-ENCODING>
+                                <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                            </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                    </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+                <IMPLEMENTATION-DATA-TYPE UUID="44444444-4444-4444-4444-444444444444">
+                    <SHORT-NAME>UInt8</SHORT-NAME>
+                    <CATEGORY>PRIMITIVE</CATEGORY>
+                    <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                            <SW-DATA-DEF-PROPS-CONDITIONAL>
+                                <BASE-TYPE-ENCODING>NONE</BASE-TYPE-ENCODING>
+                                <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                            </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                    </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+            </ELEMENTS>
+        </AR-PACKAGE>
+    </AR-PACKAGES>
+</AUTOSAR>

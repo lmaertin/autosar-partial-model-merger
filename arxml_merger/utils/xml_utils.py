@@ -2,7 +2,7 @@
 Hilfsfunktionen für den ARXML Merger
 """
 
-from typing import Dict, List, Optional, Any, Union
+from typing import List, Optional
 from lxml import etree
 from pathlib import Path
 import hashlib
@@ -226,3 +226,40 @@ def format_xml_pretty(element: etree._Element, indent: str = "  ") -> None:
                 elem.tail = i
     
     _indent(element)
+
+
+def get_autosar_path(element: etree._Element, root: etree._Element = None) -> str:
+    """Erstellt einen AUTOSAR-spezifischen Pfad mit SHORT-NAME Elementen"""
+    if root is None:
+        root = element.getroottree().getroot()
+    
+    path_parts = []
+    current = element
+    
+    while current is not None and current != root:
+        tag_name = etree.QName(current).localname
+        
+        # Versuche SHORT-NAME zu finden
+        short_name = None
+        for child in current:
+            if etree.QName(child).localname == "SHORT-NAME":
+                short_name = child.text.strip() if child.text else None
+                break
+        
+        if short_name:
+            path_parts.append(f"{tag_name}[{short_name}]")
+        else:
+            # Fallback auf Index wenn kein SHORT-NAME vorhanden
+            siblings = list(current.getparent()) if current.getparent() is not None else []
+            same_tag_siblings = [s for s in siblings if etree.QName(s).localname == tag_name]
+            
+            if len(same_tag_siblings) > 1:
+                index = same_tag_siblings.index(current) + 1
+                path_parts.append(f"{tag_name}[{index}]")
+            else:
+                path_parts.append(tag_name)
+        
+        current = current.getparent()
+    
+    path_parts.reverse()
+    return "/" + "/".join(path_parts)

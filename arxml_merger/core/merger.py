@@ -5,7 +5,6 @@ Hauptklasse für das Mergen von AUTOSAR ARXML-Dateien
 from typing import List, Union, Optional, Dict
 from pathlib import Path
 import time
-import logging
 
 from lxml import etree
 
@@ -14,11 +13,11 @@ from ..core.models import (
     ConflictResolutionStrategy, ArxmlFile
 )
 from ..core.exceptions import (
-    ArxmlMergerException, InvalidArxmlFileError, MergeConflictError, SplitKeyError
+    ArxmlMergerException, InvalidArxmlFileError
 )
 from ..schema.autosar_schema import SchemaDetector, AutosarSchemaHandler
 from ..utils.xml_utils import (
-    get_element_path, get_element_signature, find_matching_element,
+    get_element_path, get_autosar_path, get_element_signature, find_matching_element,
     merge_attributes, validate_arxml_structure, deep_copy_element,
     setup_logging
 )
@@ -210,9 +209,15 @@ class ArxmlMerger:
             # Neues Package hinzufügen
             new_package = deep_copy_element(source_package)
             target_packages.append(new_package)
+            package_path = get_autosar_path(source_package)
             self.logger.debug("New package added: %s", get_element_signature(source_package, split_keys))
+            if self.config.verbose_merge:
+                self.logger.info("+ Added new package: %s (from %s)", package_path, source_file_path)
         else:
             # Package mergen
+            if self.config.verbose_merge:
+                package_path = get_autosar_path(matching_package)
+                self.logger.info("* Merging package: %s (from %s)", package_path, source_file_path)
             conflicts.extend(self._merge_elements(
                 matching_package, source_package, schema_handler, source_file_path
             ))
@@ -287,8 +292,18 @@ class ArxmlMerger:
                     # Neues Element hinzufügen
                     new_child = deep_copy_element(source_child)
                     target_element.append(new_child)
+                    if self.config.verbose_merge:
+                        child_path = get_autosar_path(new_child)
+                        child_signature = get_element_signature(source_child, split_keys)
+                        self.logger.info("  + Added new element: %s (%s) from %s", 
+                                       child_path, child_signature, source_file_path)
                 else:
                     # Element mergen
+                    if self.config.verbose_merge:
+                        child_path = get_autosar_path(matching_child)
+                        child_signature = get_element_signature(source_child, split_keys)
+                        self.logger.info("  * Merging element: %s (%s) from %s", 
+                                       child_path, child_signature, source_file_path)
                     conflicts.extend(self._merge_elements(
                         matching_child, source_child, schema_handler, source_file_path
                     ))
@@ -318,6 +333,10 @@ class ArxmlMerger:
                 # Neues Kind hinzufügen
                 new_child = deep_copy_element(source_child)
                 target_element.append(new_child)
+                if self.config.verbose_merge:
+                    child_path = get_autosar_path(new_child)
+                    self.logger.info("  + Added new child element: %s from %s", 
+                                   child_path, source_file_path)
             else:
                 # Konflikt oder rekursiver Merge
                 if self.config.conflict_resolution == ConflictResolutionStrategy.FAIL_ON_CONFLICT:
@@ -327,8 +346,16 @@ class ArxmlMerger:
                         conflicting_values=[existing_child.text, source_child.text],
                         source_files=[source_file_path]
                     ))
+                    if self.config.verbose_merge:
+                        child_path = get_autosar_path(existing_child)
+                        self.logger.warning("  ! Conflict detected at: %s from %s", 
+                                          child_path, source_file_path)
                 else:
                     # Rekursiver Merge
+                    if self.config.verbose_merge:
+                        child_path = get_autosar_path(existing_child)
+                        self.logger.info("  * Recursively merging: %s from %s", 
+                                       child_path, source_file_path)
                     conflicts.extend(self._merge_elements(
                         existing_child, source_child, schema_handler, source_file_path
                     ))

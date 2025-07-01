@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import List
 
 from arxml_merger import ArxmlMerger, MergeConfig, ConflictResolutionStrategy
+from arxml_merger.core.exceptions import ArxmlMergerException, InvalidArxmlFileError
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -70,6 +71,12 @@ Examples:
     )
     
     parser.add_argument(
+        '--verbose-merge',
+        action='store_true',
+        help='Enable verbose merge output showing detailed element paths'
+    )
+    
+    parser.add_argument(
         '--log-file',
         help='Log file (optional)'
     )
@@ -97,7 +104,8 @@ def create_merge_config(args: argparse.Namespace) -> MergeConfig:
         conflict_resolution=conflict_resolution_map[args.conflict_resolution],
         validate_schema=args.validate_schema,
         preserve_comments=args.preserve_comments,
-        output_encoding=args.encoding
+        output_encoding=args.encoding,
+        verbose_merge=args.verbose_merge
     )
 
 
@@ -120,18 +128,18 @@ def validate_input_files(file_paths: List[str]) -> List[Path]:
 
 
 def main():
-    """Hauptfunktion für CLI"""
+    """Main function for CLI"""
     try:
         args = parse_arguments()
         
-        # Validiere Input-Dateien
+        # Validate input files
         input_files = validate_input_files(args.input)
         
-        # Erstelle Output-Verzeichnis falls nötig
+        # Create output directory if needed
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Erstelle Merge-Konfiguration
+        # Create merge configuration
         config = create_merge_config(args)
         
         # Setup Logging
@@ -141,41 +149,41 @@ def main():
             log_file=Path(args.log_file) if args.log_file else None
         )
         
-        logger.info(f"Starte ARXML Merge mit {len(input_files)} Dateien")
-        logger.info(f"Output: {output_path}")
-        logger.info(f"Konfliktauflösung: {args.conflict_resolution}")
+        logger.info("Starting ARXML merge with %d files", len(input_files))
+        logger.info("Output: %s", output_path)
+        logger.info("Conflict resolution: %s", args.conflict_resolution)
         
-        # Erstelle Merger und führe Merge durch
+        # Create merger and perform merge
         merger = ArxmlMerger(config)
         result = merger.merge_files(input_files)
         
-        # Speichere Ergebnis
+        # Save result
         result.save(output_path, pretty_print=args.pretty_print)
         
-        # Zeige Statistiken
+        # Show statistics
         stats = result.statistics
-        print(f"✓ Merge erfolgreich abgeschlossen!")
-        print(f"  Dateien verarbeitet: {stats.files_processed}")
-        print(f"  Elemente gemerged: {stats.elements_merged}")
-        print(f"  Verarbeitungszeit: {stats.processing_time:.2f}s")
-        print(f"  Schema-Version: {stats.schema_version}")
+        print("✓ Merge completed successfully!")
+        print(f"  Files processed: {stats.files_processed}")
+        print(f"  Elements merged: {stats.elements_merged}")
+        print(f"  Processing time: {stats.processing_time:.2f}s")
+        print(f"  Schema version: {stats.schema_version}")
         
         if result.conflicts:
-            print(f"  Konflikte gefunden: {len(result.conflicts)}")
-            print(f"  Konflikte gelöst: {len([c for c in result.conflicts if c.resolved_value is not None])}")
+            print(f"  Conflicts found: {len(result.conflicts)}")
+            print(f"  Conflicts resolved: {len([c for c in result.conflicts if c.resolved_value is not None])}")
             
             if result.has_conflicts():
-                print("\n⚠️  Ungelöste Konflikte:")
+                print("\n! Unresolved conflicts:")
                 for conflict in result.get_unresolved_conflicts():
                     print(f"    - {conflict.element_path}: {conflict.conflicting_values}")
         
-        print(f"\nErgebnis gespeichert in: {output_path}")
+        print(f"\nResult saved to: {output_path}")
         
     except KeyboardInterrupt:
-        print("\nMerge abgebrochen durch Benutzer", file=sys.stderr)
+        print("\nMerge cancelled by user", file=sys.stderr)
         sys.exit(130)
-    except Exception as e:
-        print(f"Fehler beim Merge: {e}", file=sys.stderr)
+    except (ArxmlMergerException, InvalidArxmlFileError) as e:
+        print(f"Error during merge: {e}", file=sys.stderr)
         sys.exit(1)
 
 

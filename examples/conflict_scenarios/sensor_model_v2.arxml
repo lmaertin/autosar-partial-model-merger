@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_19-11.xsd">
+    <AR-PACKAGES>
+        <AR-PACKAGE UUID="11111111-1111-1111-1111-111111111111">
+            <SHORT-NAME>Components</SHORT-NAME>
+            <ELEMENTS>
+                <APPLICATION-SW-COMPONENT-TYPE UUID="AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA">
+                    <SHORT-NAME>SensorComponent</SHORT-NAME>
+                    <CATEGORY>APPLICATION_LAYER</CATEGORY>
+                    <PORTS>
+                        <P-PORT-PROTOTYPE UUID="BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB">
+                            <SHORT-NAME>TemperatureOutput</SHORT-NAME>
+                            <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/TemperatureInterface</PROVIDED-INTERFACE-TREF>
+                        </P-PORT-PROTOTYPE>
+                        <P-PORT-PROTOTYPE UUID="FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF">
+                            <SHORT-NAME>PressureOutput</SHORT-NAME>
+                            <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/Interfaces/PressureInterface</PROVIDED-INTERFACE-TREF>
+                        </P-PORT-PROTOTYPE>
+                    </PORTS>
+                </APPLICATION-SW-COMPONENT-TYPE>
+            </ELEMENTS>
+        </AR-PACKAGE>
+        <AR-PACKAGE UUID="22222222-2222-2222-2222-222222222222">
+            <SHORT-NAME>Interfaces</SHORT-NAME>
+            <ELEMENTS>
+                <SENDER-RECEIVER-INTERFACE UUID="CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC">
+                    <SHORT-NAME>TemperatureInterface</SHORT-NAME>
+                    <IS-SERVICE>false</IS-SERVICE>
+                    <DATA-ELEMENTS>
+                        <VARIABLE-DATA-PROTOTYPE UUID="DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD">
+                            <SHORT-NAME>TempValue</SHORT-NAME>
+                            <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/Float32</TYPE-TREF>
+                        </VARIABLE-DATA-PROTOTYPE>
+                        <VARIABLE-DATA-PROTOTYPE UUID="GGGGGGGG-GGGG-GGGG-GGGG-GGGGGGGGGGGG">
+                            <SHORT-NAME>TempUnit</SHORT-NAME>
+                            <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/UInt8</TYPE-TREF>
+                        </VARIABLE-DATA-PROTOTYPE>
+                    </DATA-ELEMENTS>
+                </SENDER-RECEIVER-INTERFACE>
+                <SENDER-RECEIVER-INTERFACE UUID="HHHHHHHH-HHHH-HHHH-HHHH-HHHHHHHHHHHH">
+                    <SHORT-NAME>PressureInterface</SHORT-NAME>
+                    <IS-SERVICE>false</IS-SERVICE>
+                    <DATA-ELEMENTS>
+                        <VARIABLE-DATA-PROTOTYPE UUID="IIIIIIII-IIII-IIII-IIII-IIIIIIIIIIII">
+                            <SHORT-NAME>PressureValue</SHORT-NAME>
+                            <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/DataTypes/Float32</TYPE-TREF>
+                        </VARIABLE-DATA-PROTOTYPE>
+                    </DATA-ELEMENTS>
+                </SENDER-RECEIVER-INTERFACE>
+            </ELEMENTS>
+        </AR-PACKAGE>
+        <AR-PACKAGE UUID="33333333-3333-3333-3333-333333333333">
+            <SHORT-NAME>DataTypes</SHORT-NAME>
+            <ELEMENTS>
+                <IMPLEMENTATION-DATA-TYPE UUID="EEEEEEEE-EEEE-EEEE-EEEE-EEEEEEEEEEEE">
+                    <SHORT-NAME>Float32</SHORT-NAME>
+                    <CATEGORY>PRIMITIVE</CATEGORY>
+                    <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                            <SW-DATA-DEF-PROPS-CONDITIONAL>
+                                <BASE-TYPE-ENCODING>IEEE754</BASE-TYPE-ENCODING>
+                                <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                            </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                    </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+                <IMPLEMENTATION-DATA-TYPE UUID="JJJJJJJJ-JJJJ-JJJJ-JJJJ-JJJJJJJJJJJJ">
+                    <SHORT-NAME>UInt8</SHORT-NAME>
+                    <CATEGORY>PRIMITIVE</CATEGORY>
+                    <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                            <SW-DATA-DEF-PROPS-CONDITIONAL>
+                                <BASE-TYPE-ENCODING>NONE</BASE-TYPE-ENCODING>
+                                <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+                            </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                    </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+            </ELEMENTS>
+        </AR-PACKAGE>
+    </AR-PACKAGES>
+</AUTOSAR>
