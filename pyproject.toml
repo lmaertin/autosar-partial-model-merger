@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arxml-merger"
+version = "0.1.0"
+authors = [
+    {name = "Lukas"},
+]
+description = "Ein Python-Modul zum Mergen von AUTOSAR ARXML-Dateien"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup :: XML",
+    "Topic :: Software Development :: Code Generators",
+]
+keywords = ["autosar", "arxml", "xml", "merge", "automotive"]
+dependencies = [
+    "lxml>=4.9.0",
+    "xmlschema>=2.5.0",
+    "typing-extensions>=4.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=22.0.0",
+    "flake8>=5.0.0",
+    "mypy>=0.991",
+]
+
+[project.scripts]
+arxml-merger = "arxml_merger.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/lukas/arxml_merger"
+Repository = "https://github.com/lukas/arxml_merger.git"
+Issues = "https://github.com/lukas/arxml_merger/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["arxml_merger*"]
+exclude = ["tests*"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers"
+testpaths = [
+    "tests",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
