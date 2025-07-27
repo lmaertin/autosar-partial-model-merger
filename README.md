@@ -1,12 +1,17 @@
 # AUTOSAR ARXML Merger
 
-A professional Python module for merging AUTOSAR ARXML files based on the Splitable Elements approach.
+A professional Python module for merging AUTOSAR ARXML files based on the **AUTOSAR Partial Model Merge** standard.
 
-## 🎯 Status: Fully implemented and tested
+## 🎯 Status: Fully implemented and tested with Partial Model Merge compliance
 
+✅ **AUTOSAR Partial Model Merge Standard** - Fully compliant with AUTOSAR specifications  
+✅ **UUID-Based Element Identification** - Primary identification using UUID with SHORT-NAME fallback  
+✅ **Accurate Splitable Elements** - Correct classification of splitable vs non-splitable elements  
+✅ **Enhanced Element Matching** - Advanced matching algorithm following AUTOSAR standards  
+✅ **Schema-Aware Validation** - AUTOSAR-specific validation and constraint checking  
 ✅ **Basic ARXML Merging** - Successfully tested with real ARXML files  
 ✅ **Schema Detection** - Automatic detection of AUTOSAR 4.3.1 to 24-11  
-✅ **Split-Key Handling** - Correct usage of split keys  
+✅ **Split-Key Handling** - Correct usage of split keys per AUTOSAR specification  
 ✅ **Conflict Handling** - Various resolution strategies  
 ✅ **CLI Interface** - Fully functional  
 ✅ **Python API** - Simple and advanced usage  
@@ -14,6 +19,11 @@ A professional Python module for merging AUTOSAR ARXML files based on the Splita
 
 ## 🚀 Features
 
+- **AUTOSAR Partial Model Merge Compliance**: Full compliance with AUTOSAR Partial Model Merge standard
+- **UUID-Based Element Identification**: Primary identification using UUID with intelligent fallback mechanisms
+- **Accurate Splitable Elements**: Proper classification of which elements are splitable according to AUTOSAR
+- **Enhanced Element Matching**: Advanced matching algorithm that respects AUTOSAR identification rules
+- **Schema-Aware Validation**: AUTOSAR-specific validation and constraint checking
 - **Schema-supported Merging**: Automatic detection of AUTOSAR schema versions (4.3.1 to 24-11)
 - **Splitable Elements**: Intelligent merging based on AUTOSAR split keys
 - **Flexible Conflict Resolution**: Various strategies (merge_all, first_wins, last_wins, fail)
@@ -79,6 +89,47 @@ python -m arxml_merger.cli -i model*.arxml -o merged.arxml --log-level DEBUG --l
 
 > **Note**: AUTOSAR 4.5 does not exist. The AUTOSAR consortium moved from version 4.4 directly to the new year-month naming convention starting with 20-11 (November 2020).
 
+## 📋 AUTOSAR Partial Model Merge Standard Compliance
+
+This implementation fully complies with the **AUTOSAR Partial Model Merge** standard, ensuring proper handling of splitable elements and correct merge behavior.
+
+### Key Compliance Features
+
+**✅ UUID-Based Identification**
+- Primary identification of elements using UUID attributes
+- Fallback to SHORT-NAME for backward compatibility
+- Support for legacy UUID formats (uuid, S attributes)
+
+**✅ Splitable Elements Classification**
+- Accurate identification of which elements are splitable per AUTOSAR
+- Proper handling of split keys for each element type
+- Distinction between splitable and non-splitable elements
+
+**✅ Element Matching Algorithm**
+- UUID-priority matching for maximum accuracy
+- Multi-dimensional split key support
+- Intelligent fallback mechanisms
+
+**✅ Merge Validation**
+- AUTOSAR-specific constraint validation
+- Proper identifier requirement checking
+- Schema-aware processing
+
+### Demonstration
+
+Run the comprehensive demonstration to see Partial Model Merge in action:
+
+```bash
+python examples/partial_model_merge_demo.py
+```
+
+This demonstrates:
+- UUID-based element identification
+- Splitable element handling
+- Multi-model merging scenarios
+- Conflict resolution strategies
+- Standard compliance validation
+
 ## ⚙️ Conflict Resolution
 
 The module supports various strategies for handling merge conflicts:
@@ -135,20 +186,28 @@ Conflict Resolution → Merge Execution → Output Generation → END
 
 ### Important Split Keys
 
-The module automatically considers the correct split keys for AUTOSAR Splitable Elements:
+The module automatically considers the correct split keys for AUTOSAR Splitable Elements according to the **Partial Model Merge** standard:
+
+**Primary Identification:**
+- `UUID` → Primary identifier for all splitable elements (per AUTOSAR standard)
 
 **Software Components:**
-- `APPLICATION-SW-COMPONENT-TYPE` → `SHORT-NAME`
-- `COMPOSITION-SW-COMPONENT-TYPE` → `SHORT-NAME`
-- `COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE` → `SHORT-NAME`
+- `APPLICATION-SW-COMPONENT-TYPE` → `UUID`, `SHORT-NAME`
+- `COMPOSITION-SW-COMPONENT-TYPE` → `UUID`, `SHORT-NAME`
+- `COMPLEX-DEVICE-DRIVER-SW-COMPONENT-TYPE` → `UUID`, `SHORT-NAME`
 
 **Ports and Interfaces:**
-- `P-PORT-PROTOTYPE`, `R-PORT-PROTOTYPE` → `SHORT-NAME`
-- `CLIENT-SERVER-INTERFACE`, `SENDER-RECEIVER-INTERFACE` → `SHORT-NAME`
+- `P-PORT-PROTOTYPE`, `R-PORT-PROTOTYPE` → `UUID`, `SHORT-NAME`
+- `CLIENT-SERVER-INTERFACE`, `SENDER-RECEIVER-INTERFACE` → `UUID`, `SHORT-NAME`
 
 **Data Types:**
-- `IMPLEMENTATION-DATA-TYPE` → `SHORT-NAME`
-- `APPLICATION-PRIMITIVE-DATA-TYPE` → `SHORT-NAME`
+- `IMPLEMENTATION-DATA-TYPE` → `UUID`, `SHORT-NAME`
+- `APPLICATION-PRIMITIVE-DATA-TYPE` → `UUID`, `SHORT-NAME`
+
+**Element Matching Strategy:**
+1. **Primary**: Match by UUID (if available)
+2. **Secondary**: Match by SHORT-NAME and other identifiers
+3. **Fallback**: Compatible matching for legacy models without UUID
 
 ## 🏗️ Project Structure
 
@@ -368,16 +427,25 @@ def robust_merge_workflow(files: list):
 
 ## 📊 Test Coverage
 
-The project has a comprehensive test suite:
+The project has comprehensive test coverage for both basic functionality and AUTOSAR Partial Model Merge compliance:
 
-- **13 Unit Tests** - All core functions covered
-- **58% Code Coverage** - Solid test coverage
+- **22 Unit Tests Total** - Complete functionality coverage
+  - **13 Core Function Tests** - Basic merge functionality
+  - **9 Partial Model Merge Tests** - Standard compliance validation
+- **Enhanced Test Coverage** - All critical merge scenarios validated
 - **Automated Tests** - Continuous validation
-- **Realistic Test Data** - Real AUTOSAR structures
+- **Realistic Test Data** - Real AUTOSAR structures with UUID identification
+- **Standard Compliance Tests** - Specific validation of AUTOSAR requirements
 
 ```bash
+# Run all tests
+pytest tests/ -v
+
 # Run tests with coverage
 pytest tests/ -v --cov=arxml_merger --cov-report=html
+
+# Run only Partial Model Merge compliance tests
+pytest tests/test_partial_model_merge.py -v
 ```
 
 ## 🔧 Technical Implementation Details
