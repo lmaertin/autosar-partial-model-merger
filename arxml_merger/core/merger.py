@@ -89,7 +89,7 @@ class ArxmlMerger:
         return MergeResult(merged_tree, self.config, statistics, conflicts)
     
     def _validate_files(self, files: List[ArxmlFile]) -> None:
-        """Validiert die ARXML-Dateien vor dem Merge"""
+        """Validates ARXML files before merge according to AUTOSAR standards"""
         schema_versions = set(f.schema_version for f in files)
         
         if len(schema_versions) > 1:
@@ -99,9 +99,52 @@ class ArxmlMerger:
             errors = validate_arxml_structure(arxml_file.root_element)
             if errors:
                 raise InvalidArxmlFileError(
-                    f"Strukturfehler in {arxml_file.file_path}: {errors}",
+                    f"Structure errors in {arxml_file.file_path}: {errors}",
                     str(arxml_file.file_path)
                 )
+            
+            # Additional AUTOSAR Partial Model Merge validation
+            validation_errors = self._validate_partial_model_constraints(arxml_file)
+            if validation_errors:
+                self.logger.warning("Partial model constraints in %s: %s", 
+                                  arxml_file.file_path, validation_errors)
+    
+    def _validate_partial_model_constraints(self, arxml_file: ArxmlFile) -> List[str]:
+        """Validates AUTOSAR Partial Model Merge specific constraints"""
+        errors = []
+        root = arxml_file.root_element
+        
+        # Check for required elements in partial models
+        ar_packages = None
+        for child in root:
+            if etree.QName(child).localname == "AR-PACKAGES":
+                ar_packages = child
+                break
+        
+        if ar_packages is None:
+            errors.append("Missing AR-PACKAGES element")
+            return errors
+        
+        # Validate that splitable elements have proper identifiers
+        schema_handler = self._get_schema_handler(arxml_file.schema_version)
+        
+        for element in root.iter():
+            tag_name = etree.QName(element).localname
+            if schema_handler.is_splitable_element(tag_name):
+                split_keys = schema_handler.get_element_split_keys(tag_name)
+                
+                # Check if element has at least one split key value
+                has_identifier = False
+                for key in split_keys:
+                    if schema_handler.extract_split_key_value(element, key):
+                        has_identifier = True
+                        break
+                
+                if not has_identifier:
+                    element_path = get_autosar_path(element)
+                    errors.append(f"Splitable element {tag_name} at {element_path} lacks required identifiers")
+        
+        return errors
     
     def _merge_arxml_files(self, files: List[ArxmlFile]) -> tuple[etree._Element, List[MergeConflict]]:
         """Führt den eigentlichen Merge der ARXML-Dateien durch"""
@@ -271,10 +314,10 @@ class ArxmlMerger:
                                  split_keys: List[str],
                                  schema_handler: AutosarSchemaHandler,
                                  source_file_path: str) -> List[MergeConflict]:
-        """Merged Kinder von splitbaren Elementen"""
+        """Merges children of splitable elements according to AUTOSAR Partial Model Merge standard"""
         conflicts = []
         
-        # Gruppiere Kinder nach Tag-Namen
+        # Group children by tag name for efficient processing
         source_children_by_tag = {}
         for child in source_element:
             tag = etree.QName(child).localname
@@ -285,28 +328,58 @@ class ArxmlMerger:
         for tag, source_children in source_children_by_tag.items():
             target_children = [c for c in target_element if etree.QName(c).localname == tag]
             
+            # Get split keys for this child element type
+            child_split_keys = schema_handler.get_element_split_keys(tag)
+            
             for source_child in source_children:
-                matching_child = find_matching_element(source_child, target_children, split_keys)
+                matching_child = find_matching_element(source_child, target_children, child_split_keys)
                 
                 if matching_child is None:
-                    # Neues Element hinzufügen
+                    # Add new element - this is the core of partial model merging
                     new_child = deep_copy_element(source_child)
                     target_element.append(new_child)
                     if self.config.verbose_merge:
                         child_path = get_autosar_path(new_child)
-                        child_signature = get_element_signature(source_child, split_keys)
-                        self.logger.info("  + Added new element: %s (%s) from %s", 
+                        child_signature = get_element_signature(source_child, child_split_keys)
+                        self.logger.info("  + Added new splitable element: %s (%s) from %s", 
                                        child_path, child_signature, source_file_path)
                 else:
-                    # Element mergen
-                    if self.config.verbose_merge:
-                        child_path = get_autosar_path(matching_child)
-                        child_signature = get_element_signature(source_child, split_keys)
-                        self.logger.info("  * Merging element: %s (%s) from %s", 
-                                       child_path, child_signature, source_file_path)
-                    conflicts.extend(self._merge_elements(
-                        matching_child, source_child, schema_handler, source_file_path
-                    ))
+                    # Merge existing element
+                    if schema_handler.is_splitable_element(tag):
+                        # Recursive merge for splitable elements
+                        if self.config.verbose_merge:
+                            child_path = get_autosar_path(matching_child)
+                            child_signature = get_element_signature(source_child, child_split_keys)
+                            self.logger.info("  * Merging splitable element: %s (%s) from %s", 
+                                           child_path, child_signature, source_file_path)
+                        conflicts.extend(self._merge_elements(
+                            matching_child, source_child, schema_handler, source_file_path
+                        ))
+                    else:
+                        # For non-splitable children within splitable elements, apply conflict resolution
+                        if self.config.conflict_resolution == ConflictResolutionStrategy.LAST_WINS:
+                            # Replace with source content
+                            parent = matching_child.getparent()
+                            if parent is not None:
+                                index = list(parent).index(matching_child)
+                                parent.remove(matching_child)
+                                new_child = deep_copy_element(source_child)
+                                parent.insert(index, new_child)
+                                if self.config.verbose_merge:
+                                    child_path = get_autosar_path(new_child)
+                                    self.logger.info("  ~ Replaced non-splitable element: %s from %s", 
+                                                   child_path, source_file_path)
+                        elif self.config.conflict_resolution == ConflictResolutionStrategy.FIRST_WINS:
+                            # Keep target content, log the action
+                            if self.config.verbose_merge:
+                                child_path = get_autosar_path(matching_child)
+                                self.logger.info("  = Kept target element: %s (ignoring %s)", 
+                                               child_path, source_file_path)
+                        else:
+                            # Try to merge recursively
+                            conflicts.extend(self._merge_elements(
+                                matching_child, source_child, schema_handler, source_file_path
+                            ))
         
         return conflicts
     

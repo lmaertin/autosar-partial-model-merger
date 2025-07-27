@@ -36,27 +36,29 @@ def get_element_path(element: etree._Element, root: etree._Element = None) -> st
 
 
 def get_element_signature(element: etree._Element, split_keys: List[str] = None) -> str:
-    """Erstellt eine eindeutige Signatur für ein Element basierend auf Split-Keys"""
+    """Creates a unique signature for an element based on AUTOSAR Partial Model Merge split-keys"""
     if not split_keys:
-        split_keys = ["SHORT-NAME"]
+        split_keys = ["UUID", "SHORT-NAME"]
     
     signature_parts = [etree.QName(element).localname]
     
     for key in split_keys:
         value = None
         
-        # Prüfe Attribut
-        if element.get(key):
-            value = element.get(key)
+        # Handle UUID specifically (primary identifier in AUTOSAR)
+        if key == "UUID":
+            value = element.get("UUID") or element.get("uuid") or element.get("S")
         else:
-            # Prüfe Kinder-Element - einfachere Suche
-            child = None
-            for c in element:
-                if etree.QName(c).localname == key:
-                    child = c
-                    break
-            if child is not None and child.text:
-                value = child.text.strip()
+            # Check attribute first
+            if element.get(key):
+                value = element.get(key)
+            else:
+                # Check direct child element (not deep search for performance)
+                for child in element:
+                    if etree.QName(child).localname == key:
+                        if child.text:
+                            value = child.text.strip()
+                        break
         
         if value:
             signature_parts.append(f"{key}={value}")
@@ -67,12 +69,59 @@ def get_element_signature(element: etree._Element, split_keys: List[str] = None)
 def find_matching_element(target_element: etree._Element, 
                          source_elements: List[etree._Element], 
                          split_keys: List[str] = None) -> Optional[etree._Element]:
-    """Findet ein passendes Element in einer Liste basierend auf Split-Keys"""
-    target_signature = get_element_signature(target_element, split_keys)
+    """Finds matching element according to AUTOSAR Partial Model Merge standard"""
+    if not source_elements:
+        return None
     
+    if not split_keys:
+        split_keys = ["UUID", "SHORT-NAME"]
+    
+    target_tag = etree.QName(target_element).localname
+    
+    # First pass: find exact signature match
+    target_signature = get_element_signature(target_element, split_keys)
     for source_element in source_elements:
-        if get_element_signature(source_element, split_keys) == target_signature:
-            return source_element
+        source_tag = etree.QName(source_element).localname
+        if source_tag == target_tag:
+            if get_element_signature(source_element, split_keys) == target_signature:
+                return source_element
+    
+    # Second pass: prioritize UUID matching if available
+    if "UUID" in split_keys:
+        target_uuid = None
+        # Extract UUID from target
+        if target_element.get("UUID"):
+            target_uuid = target_element.get("UUID")
+        elif target_element.get("uuid"):
+            target_uuid = target_element.get("uuid")
+        elif target_element.get("S"):
+            target_uuid = target_element.get("S")
+        
+        if target_uuid:
+            for source_element in source_elements:
+                source_tag = etree.QName(source_element).localname
+                if source_tag == target_tag:
+                    source_uuid = None
+                    if source_element.get("UUID"):
+                        source_uuid = source_element.get("UUID")
+                    elif source_element.get("uuid"):
+                        source_uuid = source_element.get("uuid")
+                    elif source_element.get("S"):
+                        source_uuid = source_element.get("S")
+                    
+                    if source_uuid and source_uuid == target_uuid:
+                        return source_element
+    
+    # Third pass: try matching without UUID for backwards compatibility
+    if len(split_keys) > 1:
+        non_uuid_keys = [key for key in split_keys if key != "UUID"]
+        if non_uuid_keys:
+            target_signature_no_uuid = get_element_signature(target_element, non_uuid_keys)
+            for source_element in source_elements:
+                source_tag = etree.QName(source_element).localname
+                if source_tag == target_tag:
+                    if get_element_signature(source_element, non_uuid_keys) == target_signature_no_uuid:
+                        return source_element
     
     return None
 
