@@ -46,19 +46,29 @@ class AutosarSchemaHandler(ABC):
         return element_name in self.splitable_elements
     
     def get_element_split_keys(self, element_name: str) -> List[str]:
-        """Returns the split keys for an element"""
-        return self.split_keys.get(element_name, [])
+        """Returns the split keys for an element using SHORT-NAME based identification like dSpace SystemDesk"""
+        # Return split keys without UUID prioritization - use SHORT-NAME based matching like dSpace SystemDesk
+        return self.split_keys.get(element_name, ["SHORT-NAME"])
     
     def extract_split_key_value(self, element: etree._Element, split_key: str) -> Optional[str]:
-        """Extracts the value of a split key from an element"""
-        # Try as attribute first
+        """Extracts the value of a split key from an element using SHORT-NAME based approach like dSpace SystemDesk"""
+        # Try as direct attribute first
         if element.get(split_key):
             return element.get(split_key)
         
-        # Then as child element
-        child = element.find(f".//{{{self.namespace_uri}}}{split_key}")
-        if child is not None and child.text:
-            return child.text.strip()
+        # Then as direct child element (not deep search for performance)
+        for child in element:
+            if etree.QName(child).localname == split_key:
+                if child.text:
+                    return child.text.strip()
+                break
+        
+        # For SHORT-NAME specifically, check common patterns
+        if split_key == "SHORT-NAME":
+            # Check namespaced version
+            ns_child = element.find(f"{{{self.namespace_uri}}}SHORT-NAME")
+            if ns_child is not None and ns_child.text:
+                return ns_child.text.strip()
         
         return None
 
@@ -70,7 +80,10 @@ class Autosar40SchemaHandler(AutosarSchemaHandler):
         return "http://autosar.org/schema/r4.0"
     
     def _get_split_keys(self) -> Dict[str, List[str]]:
+        """Returns split keys according to AUTOSAR Partial Model Merge standard"""
         return {
+            # Core splitable elements with their proper split keys
+            "AR-PACKAGE": ["SHORT-NAME"],
             "SW-COMPONENT-TYPE": ["SHORT-NAME"],
             "APPLICATION-SW-COMPONENT-TYPE": ["SHORT-NAME"],
             "COMPOSITION-SW-COMPONENT-TYPE": ["SHORT-NAME"],
@@ -80,31 +93,37 @@ class Autosar40SchemaHandler(AutosarSchemaHandler):
             "SENSOR-ACTUATOR-SW-COMPONENT-TYPE": ["SHORT-NAME"],
             "PARAMETER-SW-COMPONENT-TYPE": ["SHORT-NAME"],
             "CALIBRATION-SW-COMPONENT-TYPE": ["SHORT-NAME"],
-            "PORT-PROTOTYPE": ["SHORT-NAME"],
+            
+            # Port prototypes
             "P-PORT-PROTOTYPE": ["SHORT-NAME"],
             "R-PORT-PROTOTYPE": ["SHORT-NAME"],
             "PR-PORT-PROTOTYPE": ["SHORT-NAME"],
-            "RUNNABLE-ENTITY": ["SHORT-NAME"],
-            "VARIABLE-DATA-PROTOTYPE": ["SHORT-NAME"],
-            "PARAMETER-DATA-PROTOTYPE": ["SHORT-NAME"],
-            "ARGUMENT-DATA-PROTOTYPE": ["SHORT-NAME"],
-            "OPERATION-PROTOTYPE": ["SHORT-NAME"],
+            
+            # Interfaces
             "CLIENT-SERVER-INTERFACE": ["SHORT-NAME"],
             "SENDER-RECEIVER-INTERFACE": ["SHORT-NAME"],
             "NV-DATA-INTERFACE": ["SHORT-NAME"],
             "PARAMETER-INTERFACE": ["SHORT-NAME"],
             "MODE-SWITCH-INTERFACE": ["SHORT-NAME"],
             "TRIGGER-INTERFACE": ["SHORT-NAME"],
-            "DATA-TYPE-MAPPING": ["SHORT-NAME"],
+            
+            # Data types
             "IMPLEMENTATION-DATA-TYPE": ["SHORT-NAME"],
             "APPLICATION-PRIMITIVE-DATA-TYPE": ["SHORT-NAME"],
             "APPLICATION-RECORD-DATA-TYPE": ["SHORT-NAME"],
             "APPLICATION-ARRAY-DATA-TYPE": ["SHORT-NAME"],
             "AUTOSAR-DATA-TYPE": ["SHORT-NAME"],
-            "UNIT": ["SHORT-NAME"],
-            "COMPU-METHOD": ["SHORT-NAME"],
-            "DATA-CONSTR": ["SHORT-NAME"],
-            "CONSTANT-SPECIFICATION": ["SHORT-NAME"],
+            
+            # Internal behavior elements
+            "RUNNABLE-ENTITY": ["SHORT-NAME"],
+            "DATA-ELEMENT-PROTOTYPE": ["SHORT-NAME"],
+            "VARIABLE-DATA-PROTOTYPE": ["SHORT-NAME"],
+            "PARAMETER-DATA-PROTOTYPE": ["SHORT-NAME"],
+            "ARGUMENT-DATA-PROTOTYPE": ["SHORT-NAME"],
+            "OPERATION-PROTOTYPE": ["SHORT-NAME"],
+            
+            # System elements
+            "FIBEX-ELEMENT": ["SHORT-NAME"],
             "SYSTEM": ["SHORT-NAME"],
             "ECU-INSTANCE": ["SHORT-NAME"],
             "CAN-CLUSTER": ["SHORT-NAME"],
@@ -112,14 +131,20 @@ class Autosar40SchemaHandler(AutosarSchemaHandler):
             "I-PDU": ["SHORT-NAME"],
             "I-SIGNAL": ["SHORT-NAME"],
             "SYSTEM-SIGNAL": ["SHORT-NAME"],
-            "FIBEX-ELEMENT": ["SHORT-NAME"],
+            
+            # Common elements
+            "UNIT": ["SHORT-NAME"],
+            "COMPU-METHOD": ["SHORT-NAME"],
+            "DATA-CONSTR": ["SHORT-NAME"],
+            "CONSTANT-SPECIFICATION": ["SHORT-NAME"],
             "CATEGORY": ["SHORT-NAME"],
-            "PACKAGE": ["SHORT-NAME"],
-            "AR-PACKAGE": ["SHORT-NAME"],
         }
     
     def _get_splitable_elements(self) -> Set[str]:
+        """Returns elements that are splitable according to AUTOSAR standard"""
         return {
+            # Only truly splitable elements according to AUTOSAR Partial Model Merge
+            "AR-PACKAGE",
             "SW-COMPONENT-TYPE",
             "APPLICATION-SW-COMPONENT-TYPE",
             "COMPOSITION-SW-COMPONENT-TYPE",
@@ -129,18 +154,12 @@ class Autosar40SchemaHandler(AutosarSchemaHandler):
             "SENSOR-ACTUATOR-SW-COMPONENT-TYPE",
             "PARAMETER-SW-COMPONENT-TYPE",
             "CALIBRATION-SW-COMPONENT-TYPE",
-            "PORT-PROTOTYPE",
             "P-PORT-PROTOTYPE",
             "R-PORT-PROTOTYPE",
             "PR-PORT-PROTOTYPE",
-            "RUNNABLE-ENTITY",
-            "VARIABLE-DATA-PROTOTYPE",
-            "PARAMETER-DATA-PROTOTYPE",
-            "ARGUMENT-DATA-PROTOTYPE",
-            "OPERATION-PROTOTYPE",
             "CLIENT-SERVER-INTERFACE",
             "SENDER-RECEIVER-INTERFACE",
-            "NV-DATA-INTERFACE",
+            "NV-DATA-INTERFACE", 
             "PARAMETER-INTERFACE",
             "MODE-SWITCH-INTERFACE",
             "TRIGGER-INTERFACE",
@@ -149,10 +168,13 @@ class Autosar40SchemaHandler(AutosarSchemaHandler):
             "APPLICATION-RECORD-DATA-TYPE",
             "APPLICATION-ARRAY-DATA-TYPE",
             "AUTOSAR-DATA-TYPE",
-            "UNIT",
-            "COMPU-METHOD",
-            "DATA-CONSTR",
-            "CONSTANT-SPECIFICATION",
+            "RUNNABLE-ENTITY",
+            "DATA-ELEMENT-PROTOTYPE",
+            "VARIABLE-DATA-PROTOTYPE",
+            "PARAMETER-DATA-PROTOTYPE",
+            "ARGUMENT-DATA-PROTOTYPE",
+            "OPERATION-PROTOTYPE",
+            "FIBEX-ELEMENT",
             "SYSTEM",
             "ECU-INSTANCE",
             "CAN-CLUSTER",
@@ -160,10 +182,11 @@ class Autosar40SchemaHandler(AutosarSchemaHandler):
             "I-PDU",
             "I-SIGNAL",
             "SYSTEM-SIGNAL",
-            "FIBEX-ELEMENT",
+            "UNIT",
+            "COMPU-METHOD",
+            "DATA-CONSTR",
+            "CONSTANT-SPECIFICATION",
             "CATEGORY",
-            "PACKAGE",
-            "AR-PACKAGE",
         }
 
 

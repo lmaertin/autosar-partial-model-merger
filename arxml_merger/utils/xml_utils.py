@@ -36,7 +36,7 @@ def get_element_path(element: etree._Element, root: etree._Element = None) -> st
 
 
 def get_element_signature(element: etree._Element, split_keys: List[str] = None) -> str:
-    """Erstellt eine eindeutige Signatur für ein Element basierend auf Split-Keys"""
+    """Creates a unique signature for an element based on SHORT-NAME like dSpace SystemDesk"""
     if not split_keys:
         split_keys = ["SHORT-NAME"]
     
@@ -45,18 +45,16 @@ def get_element_signature(element: etree._Element, split_keys: List[str] = None)
     for key in split_keys:
         value = None
         
-        # Prüfe Attribut
+        # Check attribute first
         if element.get(key):
             value = element.get(key)
         else:
-            # Prüfe Kinder-Element - einfachere Suche
-            child = None
-            for c in element:
-                if etree.QName(c).localname == key:
-                    child = c
+            # Check direct child element (not deep search for performance)
+            for child in element:
+                if etree.QName(child).localname == key:
+                    if child.text:
+                        value = child.text.strip()
                     break
-            if child is not None and child.text:
-                value = child.text.strip()
         
         if value:
             signature_parts.append(f"{key}={value}")
@@ -67,10 +65,25 @@ def get_element_signature(element: etree._Element, split_keys: List[str] = None)
 def find_matching_element(target_element: etree._Element, 
                          source_elements: List[etree._Element], 
                          split_keys: List[str] = None) -> Optional[etree._Element]:
-    """Findet ein passendes Element in einer Liste basierend auf Split-Keys"""
-    target_signature = get_element_signature(target_element, split_keys)
+    """Finds matching element using SHORT-NAME based matching like dSpace SystemDesk"""
+    if not source_elements:
+        return None
     
-    for source_element in source_elements:
+    if not split_keys:
+        split_keys = ["SHORT-NAME"]
+    
+    target_tag = etree.QName(target_element).localname
+    
+    # Find elements with matching tag first
+    matching_tag_elements = [elem for elem in source_elements 
+                           if etree.QName(elem).localname == target_tag]
+    
+    if not matching_tag_elements:
+        return None
+    
+    # Try exact signature match using SHORT-NAME based approach
+    target_signature = get_element_signature(target_element, split_keys)
+    for source_element in matching_tag_elements:
         if get_element_signature(source_element, split_keys) == target_signature:
             return source_element
     
