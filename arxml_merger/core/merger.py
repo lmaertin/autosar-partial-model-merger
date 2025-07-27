@@ -110,7 +110,7 @@ class ArxmlMerger:
                                   arxml_file.file_path, validation_errors)
     
     def _validate_partial_model_constraints(self, arxml_file: ArxmlFile) -> List[str]:
-        """Validates AUTOSAR Partial Model Merge specific constraints"""
+        """Validates AUTOSAR Partial Model Merge specific constraints using SHORT-NAME based approach"""
         errors = []
         root = arxml_file.root_element
         
@@ -125,7 +125,7 @@ class ArxmlMerger:
             errors.append("Missing AR-PACKAGES element")
             return errors
         
-        # Validate that splitable elements have proper identifiers
+        # Validate that splitable elements have proper SHORT-NAME identifiers (like dSpace SystemDesk)
         schema_handler = self._get_schema_handler(arxml_file.schema_version)
         
         for element in root.iter():
@@ -133,7 +133,7 @@ class ArxmlMerger:
             if schema_handler.is_splitable_element(tag_name):
                 split_keys = schema_handler.get_element_split_keys(tag_name)
                 
-                # Check if element has at least one split key value
+                # Check if element has at least one split key value (primarily SHORT-NAME)
                 has_identifier = False
                 for key in split_keys:
                     if schema_handler.extract_split_key_value(element, key):
@@ -314,7 +314,7 @@ class ArxmlMerger:
                                  split_keys: List[str],
                                  schema_handler: AutosarSchemaHandler,
                                  source_file_path: str) -> List[MergeConflict]:
-        """Merges children of splitable elements according to AUTOSAR Partial Model Merge standard"""
+        """Merges children of splitable elements using SHORT-NAME based approach like dSpace SystemDesk"""
         conflicts = []
         
         # Group children by tag name for efficient processing
@@ -328,7 +328,7 @@ class ArxmlMerger:
         for tag, source_children in source_children_by_tag.items():
             target_children = [c for c in target_element if etree.QName(c).localname == tag]
             
-            # Get split keys for this child element type
+            # Get split keys for this child element type (SHORT-NAME based)
             child_split_keys = schema_handler.get_element_split_keys(tag)
             
             for source_child in source_children:

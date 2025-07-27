@@ -16,18 +16,18 @@ class TestPartialModelMergeCompliance:
     """Test class for AUTOSAR Partial Model Merge standard compliance"""
     
     @pytest.fixture
-    def base_arxml_with_uuid(self):
-        """Creates a test ARXML file with UUID identifiers"""
+    def base_arxml_with_short_names(self):
+        """Creates a test ARXML file with SHORT-NAME identifiers like dSpace SystemDesk"""
         return """<?xml version="1.0" encoding="UTF-8"?>
 <AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <AR-PACKAGES>
-        <AR-PACKAGE UUID="12345678-1234-5678-9abc-123456789abc">
+        <AR-PACKAGE>
             <SHORT-NAME>BaseComponents</SHORT-NAME>
             <ELEMENTS>
-                <APPLICATION-SW-COMPONENT-TYPE UUID="87654321-4321-8765-cba9-987654321987">
+                <APPLICATION-SW-COMPONENT-TYPE>
                     <SHORT-NAME>BaseComponent</SHORT-NAME>
                     <PORTS>
-                        <P-PORT-PROTOTYPE UUID="11111111-2222-3333-4444-555555555555">
+                        <P-PORT-PROTOTYPE>
                             <SHORT-NAME>BasePort</SHORT-NAME>
                         </P-PORT-PROTOTYPE>
                     </PORTS>
@@ -38,18 +38,18 @@ class TestPartialModelMergeCompliance:
 </AUTOSAR>"""
     
     @pytest.fixture
-    def extension_arxml_with_uuid(self):
-        """Creates an extension ARXML file with different UUIDs"""
+    def extension_arxml_with_short_names(self):
+        """Creates an extension ARXML file using SHORT-NAME based identification"""
         return """<?xml version="1.0" encoding="UTF-8"?>
 <AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <AR-PACKAGES>
-        <AR-PACKAGE UUID="12345678-1234-5678-9abc-123456789abc">
+        <AR-PACKAGE>
             <SHORT-NAME>BaseComponents</SHORT-NAME>
             <ELEMENTS>
-                <APPLICATION-SW-COMPONENT-TYPE UUID="87654321-4321-8765-cba9-987654321987">
+                <APPLICATION-SW-COMPONENT-TYPE>
                     <SHORT-NAME>BaseComponent</SHORT-NAME>
                     <PORTS>
-                        <R-PORT-PROTOTYPE UUID="66666666-7777-8888-9999-000000000000">
+                        <R-PORT-PROTOTYPE>
                             <SHORT-NAME>ExtensionPort</SHORT-NAME>
                         </R-PORT-PROTOTYPE>
                     </PORTS>
@@ -60,44 +60,42 @@ class TestPartialModelMergeCompliance:
 </AUTOSAR>"""
     
     @pytest.fixture
-    def temp_uuid_files(self, base_arxml_with_uuid, extension_arxml_with_uuid):
-        """Creates temporary files with UUID content"""
+    def temp_short_name_files(self, base_arxml_with_short_names, extension_arxml_with_short_names):
+        """Creates temporary files with SHORT-NAME content"""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             
-            file1 = temp_path / "base_uuid.arxml"
-            file2 = temp_path / "extension_uuid.arxml"
+            file1 = temp_path / "base_short_name.arxml"
+            file2 = temp_path / "extension_short_name.arxml"
             
-            file1.write_text(base_arxml_with_uuid, encoding='utf-8')
-            file2.write_text(extension_arxml_with_uuid, encoding='utf-8')
+            file1.write_text(base_arxml_with_short_names, encoding='utf-8')
+            file2.write_text(extension_arxml_with_short_names, encoding='utf-8')
             
             yield [file1, file2], temp_path
     
-    def test_uuid_based_element_matching(self):
-        """Test that elements are matched primarily by UUID"""
-        base_xml = """<APPLICATION-SW-COMPONENT-TYPE xmlns="http://autosar.org/schema/r4.0" 
-                         UUID="87654321-4321-8765-cba9-987654321987">
+    def test_short_name_based_element_matching(self):
+        """Test that elements are matched primarily by SHORT-NAME like dSpace SystemDesk"""
+        base_xml = """<APPLICATION-SW-COMPONENT-TYPE xmlns="http://autosar.org/schema/r4.0">
                         <SHORT-NAME>Component</SHORT-NAME>
                       </APPLICATION-SW-COMPONENT-TYPE>"""
         
-        extension_xml = """<APPLICATION-SW-COMPONENT-TYPE xmlns="http://autosar.org/schema/r4.0" 
-                             UUID="87654321-4321-8765-cba9-987654321987">
-                            <SHORT-NAME>DifferentName</SHORT-NAME>
+        extension_xml = """<APPLICATION-SW-COMPONENT-TYPE xmlns="http://autosar.org/schema/r4.0">
+                            <SHORT-NAME>Component</SHORT-NAME>
                            </APPLICATION-SW-COMPONENT-TYPE>"""
         
         base_element = etree.fromstring(base_xml.encode('utf-8'))
         extension_element = etree.fromstring(extension_xml.encode('utf-8'))
         
-        # Test element signature with UUID priority
-        signature_base = get_element_signature(base_element, ["UUID", "SHORT-NAME"])
-        signature_ext = get_element_signature(extension_element, ["UUID", "SHORT-NAME"])
+        # Test element signature with SHORT-NAME based approach
+        signature_base = get_element_signature(base_element, ["SHORT-NAME"])
+        signature_ext = get_element_signature(extension_element, ["SHORT-NAME"])
         
-        # Should match despite different SHORT-NAME because UUID is the same
-        assert "UUID=87654321-4321-8765-cba9-987654321987" in signature_base
-        assert "UUID=87654321-4321-8765-cba9-987654321987" in signature_ext
+        # Should match when SHORT-NAME is the same
+        assert "SHORT-NAME=Component" in signature_base
+        assert "SHORT-NAME=Component" in signature_ext
         
         # Find matching should work
-        matching = find_matching_element(base_element, [extension_element], ["UUID", "SHORT-NAME"])
+        matching = find_matching_element(base_element, [extension_element], ["SHORT-NAME"])
         assert matching is not None
     
     def test_splitable_elements_classification(self):
@@ -116,22 +114,22 @@ class TestPartialModelMergeCompliance:
         assert not schema_handler.is_splitable_element("ELEMENTS")
         assert not schema_handler.is_splitable_element("INTERNAL-BEHAVIORS")
     
-    def test_split_keys_include_uuid(self):
-        """Test that splitable elements have UUID as primary split key"""
+    def test_split_keys_use_short_name(self):
+        """Test that splitable elements use SHORT-NAME as primary split key like dSpace SystemDesk"""
         schema_handler = SchemaDetector.create_schema_handler("4.0")
         
-        # Test key splitable elements have UUID as primary split key
+        # Test key splitable elements have SHORT-NAME as primary split key
         split_keys = schema_handler.get_element_split_keys("APPLICATION-SW-COMPONENT-TYPE")
-        assert "UUID" in split_keys
-        assert split_keys[0] == "UUID"  # UUID should be first priority
+        assert "SHORT-NAME" in split_keys
+        assert split_keys[0] == "SHORT-NAME"  # SHORT-NAME should be first priority
         
         split_keys = schema_handler.get_element_split_keys("AR-PACKAGE")
-        assert "UUID" in split_keys
-        assert split_keys[0] == "UUID"
+        assert "SHORT-NAME" in split_keys
+        assert split_keys[0] == "SHORT-NAME"
     
-    def test_partial_model_merge_functionality(self, temp_uuid_files):
-        """Test complete partial model merge with UUID-based matching"""
-        files, _ = temp_uuid_files
+    def test_partial_model_merge_functionality(self, temp_short_name_files):
+        """Test complete partial model merge with SHORT-NAME based matching like dSpace SystemDesk"""
+        files, _ = temp_short_name_files
         
         merger = ArxmlMerger()
         result = merger.merge_files(files)
@@ -160,29 +158,29 @@ class TestPartialModelMergeCompliance:
         assert "BasePort" in port_names
         assert "ExtensionPort" in port_names
     
-    def test_uuid_extraction_methods(self):
-        """Test different UUID extraction patterns"""
+    def test_short_name_extraction_methods(self):
+        """Test different SHORT-NAME extraction patterns like dSpace SystemDesk"""
         schema_handler = SchemaDetector.create_schema_handler("4.0")
         
-        # Test UUID as attribute
-        xml_uuid_attr = """<AR-PACKAGE xmlns="http://autosar.org/schema/r4.0" 
-                              UUID="12345678-1234-5678-9abc-123456789abc">
-                           </AR-PACKAGE>"""
-        element = etree.fromstring(xml_uuid_attr.encode('utf-8'))
-        uuid_value = schema_handler.extract_split_key_value(element, "UUID")
-        assert uuid_value == "12345678-1234-5678-9abc-123456789abc"
+        # Test SHORT-NAME as child element
+        xml_short_name_child = """<AR-PACKAGE xmlns="http://autosar.org/schema/r4.0">
+                                    <SHORT-NAME>TestPackage</SHORT-NAME>
+                                  </AR-PACKAGE>"""
+        element = etree.fromstring(xml_short_name_child.encode('utf-8'))
+        short_name_value = schema_handler.extract_split_key_value(element, "SHORT-NAME")
+        assert short_name_value == "TestPackage"
         
-        # Test fallback to lowercase uuid attribute
-        xml_uuid_lower = """<AR-PACKAGE xmlns="http://autosar.org/schema/r4.0" 
-                                uuid="12345678-1234-5678-9abc-123456789abc">
-                             </AR-PACKAGE>"""
-        element = etree.fromstring(xml_uuid_lower.encode('utf-8'))
-        uuid_value = schema_handler.extract_split_key_value(element, "UUID")
-        assert uuid_value == "12345678-1234-5678-9abc-123456789abc"
+        # Test SHORT-NAME as attribute (less common but possible)
+        xml_short_name_attr = """<AR-PACKAGE xmlns="http://autosar.org/schema/r4.0" 
+                                    SHORT-NAME="TestPackageAttr">
+                                 </AR-PACKAGE>"""
+        element = etree.fromstring(xml_short_name_attr.encode('utf-8'))
+        short_name_value = schema_handler.extract_split_key_value(element, "SHORT-NAME")
+        assert short_name_value == "TestPackageAttr"
     
-    def test_partial_model_constraint_validation(self, temp_uuid_files):
+    def test_partial_model_constraint_validation(self, temp_short_name_files):
         """Test validation of partial model constraints"""
-        files, _ = temp_uuid_files
+        files, _ = temp_short_name_files
         
         merger = ArxmlMerger()
         
@@ -240,15 +238,14 @@ class TestAutosarSchemaHandlerEnhancements:
             name_value = handler.extract_split_key_value(element, "SHORT-NAME")
             assert name_value == "TestComp"
     
-    def test_enhanced_split_key_logic(self):
-        """Test that enhanced split key logic works correctly"""
+    def test_short_name_based_split_key_logic(self):
+        """Test that SHORT-NAME based split key logic works correctly like dSpace SystemDesk"""
         handler = SchemaDetector.create_schema_handler("4.0")
         
-        # Test that splitable elements get UUID as primary split key
+        # Test that splitable elements get SHORT-NAME as primary split key
         split_keys = handler.get_element_split_keys("APPLICATION-SW-COMPONENT-TYPE")
-        assert len(split_keys) >= 2
-        assert split_keys[0] == "UUID"
-        assert "SHORT-NAME" in split_keys
+        assert len(split_keys) >= 1
+        assert split_keys[0] == "SHORT-NAME"
 
 
 if __name__ == "__main__":

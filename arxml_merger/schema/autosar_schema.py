@@ -46,28 +46,12 @@ class AutosarSchemaHandler(ABC):
         return element_name in self.splitable_elements
     
     def get_element_split_keys(self, element_name: str) -> List[str]:
-        """Returns the split keys for an element according to AUTOSAR Partial Model Merge standard"""
-        # Get base split keys
-        split_keys = self.split_keys.get(element_name, [])
-        
-        # For splitable elements, UUID should always be the primary identifier
-        if element_name in self.splitable_elements and "UUID" not in split_keys:
-            return ["UUID"] + split_keys
-        
-        return split_keys
+        """Returns the split keys for an element using SHORT-NAME based identification like dSpace SystemDesk"""
+        # Return split keys without UUID prioritization - use SHORT-NAME based matching like dSpace SystemDesk
+        return self.split_keys.get(element_name, ["SHORT-NAME"])
     
     def extract_split_key_value(self, element: etree._Element, split_key: str) -> Optional[str]:
-        """Extracts the value of a split key from an element following AUTOSAR standard"""
-        # For UUID attributes - primary identifier in AUTOSAR
-        if split_key == "UUID":
-            uuid_value = element.get("UUID")
-            if uuid_value:
-                return uuid_value
-            # Fallback to older UUID formats
-            uuid_value = element.get("uuid") or element.get("S")
-            if uuid_value:
-                return uuid_value
-        
+        """Extracts the value of a split key from an element using SHORT-NAME based approach like dSpace SystemDesk"""
         # Try as direct attribute first
         if element.get(split_key):
             return element.get(split_key)

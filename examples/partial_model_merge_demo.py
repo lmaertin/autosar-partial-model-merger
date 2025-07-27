@@ -1,5 +1,5 @@
 """
-Comprehensive example demonstrating AUTOSAR Partial Model Merge standard compliance
+Comprehensive example demonstrating dSpace SystemDesk compatible merge functionality
 """
 
 from pathlib import Path
@@ -10,35 +10,35 @@ from arxml_merger import ArxmlMerger, MergeConfig, ConflictResolutionStrategy
 
 
 def create_comprehensive_example():
-    """Creates a comprehensive example showing AUTOSAR Partial Model Merge functionality"""
+    """Creates a comprehensive example showing dSpace SystemDesk compatible merge functionality"""
     
-    # Base model with UUID identifiers
+    # Base model with SHORT-NAME identifiers (like dSpace SystemDesk)
     base_model = """<?xml version="1.0" encoding="UTF-8"?>
 <AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <AR-PACKAGES>
-        <AR-PACKAGE UUID="pkg-base-001">
+        <AR-PACKAGE>
             <SHORT-NAME>BaseSystem</SHORT-NAME>
             <ELEMENTS>
-                <APPLICATION-SW-COMPONENT-TYPE UUID="comp-engine-001">
+                <APPLICATION-SW-COMPONENT-TYPE>
                     <SHORT-NAME>EngineControl</SHORT-NAME>
                     <PORTS>
-                        <P-PORT-PROTOTYPE UUID="port-throttle-001">
+                        <P-PORT-PROTOTYPE>
                             <SHORT-NAME>ThrottlePosition</SHORT-NAME>
                         </P-PORT-PROTOTYPE>
-                        <R-PORT-PROTOTYPE UUID="port-speed-001">
+                        <R-PORT-PROTOTYPE>
                             <SHORT-NAME>VehicleSpeed</SHORT-NAME>
                         </R-PORT-PROTOTYPE>
                     </PORTS>
                 </APPLICATION-SW-COMPONENT-TYPE>
-                <CLIENT-SERVER-INTERFACE UUID="iface-diag-001">
+                <CLIENT-SERVER-INTERFACE>
                     <SHORT-NAME>DiagnosticInterface</SHORT-NAME>
                 </CLIENT-SERVER-INTERFACE>
             </ELEMENTS>
         </AR-PACKAGE>
-        <AR-PACKAGE UUID="pkg-types-001">
+        <AR-PACKAGE>
             <SHORT-NAME>DataTypes</SHORT-NAME>
             <ELEMENTS>
-                <IMPLEMENTATION-DATA-TYPE UUID="type-uint32-001">
+                <IMPLEMENTATION-DATA-TYPE>
                     <SHORT-NAME>UInt32Type</SHORT-NAME>
                 </IMPLEMENTATION-DATA-TYPE>
             </ELEMENTS>
@@ -50,32 +50,32 @@ def create_comprehensive_example():
     extension_model = """<?xml version="1.0" encoding="UTF-8"?>
 <AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <AR-PACKAGES>
-        <AR-PACKAGE UUID="pkg-base-001">
+        <AR-PACKAGE>
             <SHORT-NAME>BaseSystem</SHORT-NAME>
             <ELEMENTS>
-                <APPLICATION-SW-COMPONENT-TYPE UUID="comp-engine-001">
+                <APPLICATION-SW-COMPONENT-TYPE>
                     <SHORT-NAME>EngineControl</SHORT-NAME>
                     <PORTS>
-                        <P-PORT-PROTOTYPE UUID="port-rpm-002">
+                        <P-PORT-PROTOTYPE>
                             <SHORT-NAME>EngineRPM</SHORT-NAME>
                         </P-PORT-PROTOTYPE>
-                        <R-PORT-PROTOTYPE UUID="port-temp-002">
+                        <R-PORT-PROTOTYPE>
                             <SHORT-NAME>CoolantTemperature</SHORT-NAME>
                         </R-PORT-PROTOTYPE>
                     </PORTS>
                 </APPLICATION-SW-COMPONENT-TYPE>
-                <SENDER-RECEIVER-INTERFACE UUID="iface-sensors-002">
+                <SENDER-RECEIVER-INTERFACE>
                     <SHORT-NAME>SensorInterface</SHORT-NAME>
                 </SENDER-RECEIVER-INTERFACE>
             </ELEMENTS>
         </AR-PACKAGE>
-        <AR-PACKAGE UUID="pkg-adaptive-002">
+        <AR-PACKAGE>
             <SHORT-NAME>AdaptiveApplications</SHORT-NAME>
             <ELEMENTS>
-                <APPLICATION-SW-COMPONENT-TYPE UUID="comp-adaptive-002">
+                <APPLICATION-SW-COMPONENT-TYPE>
                     <SHORT-NAME>AdaptiveService</SHORT-NAME>
                     <PORTS>
-                        <P-PORT-PROTOTYPE UUID="port-service-002">
+                        <P-PORT-PROTOTYPE>
                             <SHORT-NAME>ServicePort</SHORT-NAME>
                         </P-PORT-PROTOTYPE>
                     </PORTS>
@@ -85,18 +85,18 @@ def create_comprehensive_example():
     </AR-PACKAGES>
 </AUTOSAR>"""
 
-    # Third model with conflicting element (same UUID, different content)
+    # Third model with conflicting element (same SHORT-NAME, different content)
     conflict_model = """<?xml version="1.0" encoding="UTF-8"?>
 <AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <AR-PACKAGES>
-        <AR-PACKAGE UUID="pkg-types-001">
+        <AR-PACKAGE>
             <SHORT-NAME>DataTypes</SHORT-NAME>
             <ELEMENTS>
-                <IMPLEMENTATION-DATA-TYPE UUID="type-uint32-001">
+                <IMPLEMENTATION-DATA-TYPE>
                     <SHORT-NAME>UInt32Type</SHORT-NAME>
-                    <!-- This represents updated content for the same UUID -->
+                    <!-- This represents updated content for the same SHORT-NAME -->
                 </IMPLEMENTATION-DATA-TYPE>
-                <IMPLEMENTATION-DATA-TYPE UUID="type-float64-003">
+                <IMPLEMENTATION-DATA-TYPE>
                     <SHORT-NAME>Float64Type</SHORT-NAME>
                 </IMPLEMENTATION-DATA-TYPE>
             </ELEMENTS>
@@ -108,9 +108,9 @@ def create_comprehensive_example():
 
 
 def demonstrate_partial_model_merge():
-    """Demonstrates the AUTOSAR Partial Model Merge functionality"""
+    """Demonstrates the dSpace SystemDesk compatible merge functionality"""
     
-    print("AUTOSAR Partial Model Merge - Standard Compliance Demo")
+    print("dSpace SystemDesk Compatible Merge - Demo")
     print("=" * 60)
     
     # Create test models
@@ -134,13 +134,13 @@ def demonstrate_partial_model_merge():
                 "name": "Basic Partial Model Merge",
                 "files": [base_file, extension_file],
                 "strategy": ConflictResolutionStrategy.MERGE_ALL,
-                "description": "Merging base model with extension using UUID-based identification"
+                "description": "Merging base model with extension using SHORT-NAME based identification"
             },
             {
                 "name": "Three-Way Merge with Conflicts",
                 "files": [base_file, extension_file, conflict_file],
                 "strategy": ConflictResolutionStrategy.LAST_WINS,
-                "description": "Merging three models with UUID conflicts resolved by last-wins strategy"
+                "description": "Merging three models with SHORT-NAME conflicts resolved by last-wins strategy"
             },
             {
                 "name": "Conservative Merge",
@@ -218,32 +218,28 @@ def analyze_merged_content(merged_tree):
     print(f"     Interfaces: {len(interfaces)}")
     print(f"     Data Types: {len(data_types)}")
     
-    # Demonstrate UUID-based identification
-    uuid_elements = []
+    # Demonstrate SHORT-NAME based identification (like dSpace SystemDesk)
+    short_name_elements = []
     for element in merged_tree.iter():
-        if element.get("UUID"):
-            uuid_elements.append(element)
+        for child in element:
+            if etree.QName(child).localname == "SHORT-NAME" and child.text:
+                short_name_elements.append((element, child.text))
+                break
     
-    print(f"     Elements with UUID: {len(uuid_elements)}")
+    print(f"     Elements with SHORT-NAME: {len(short_name_elements)}")
     
-    # Show some sample UUIDs
-    if uuid_elements:
-        print(f"     Sample UUIDs:")
-        for element in uuid_elements[:3]:
+    # Show some sample SHORT-NAMEs
+    if short_name_elements:
+        print(f"     Sample SHORT-NAMEs:")
+        for element, short_name in short_name_elements[:3]:
             tag = etree.QName(element).localname
-            uuid = element.get("UUID")
-            short_name = ""
-            for child in element:
-                if etree.QName(child).localname == "SHORT-NAME" and child.text:
-                    short_name = child.text
-                    break
-            print(f"       {tag}[{short_name}]: {uuid}")
+            print(f"       {tag}: {short_name}")
 
 
 def test_standard_compliance():
-    """Tests specific AUTOSAR Partial Model Merge standard requirements"""
+    """Tests specific dSpace SystemDesk compatible merge requirements"""
     
-    print("\nAUTOSAR Standard Compliance Tests")
+    print("\ndSpace SystemDesk Compatibility Tests")
     print("=" * 40)
     
     from arxml_merger.schema.autosar_schema import SchemaDetector
@@ -277,23 +273,20 @@ def test_standard_compliance():
         is_splitable = handler.is_splitable_element(element)
         print(f"   {element}: {'✗' if not is_splitable else '✓ (ERROR)'}")
     
-    # Test UUID-based identification
-    print("\n✅ UUID-Based Identification:")
-    test_xml = """<APPLICATION-SW-COMPONENT-TYPE xmlns="http://autosar.org/schema/r4.0" 
-                     UUID="test-uuid-123">
+    # Test SHORT-NAME based identification  
+    print("\n✅ SHORT-NAME Based Identification:")
+    test_xml = """<APPLICATION-SW-COMPONENT-TYPE xmlns="http://autosar.org/schema/r4.0">
                     <SHORT-NAME>TestComponent</SHORT-NAME>
                   </APPLICATION-SW-COMPONENT-TYPE>"""
     
     element = etree.fromstring(test_xml.encode('utf-8'))
-    uuid_value = handler.extract_split_key_value(element, "UUID")
     name_value = handler.extract_split_key_value(element, "SHORT-NAME")
     
-    print(f"   UUID extraction: {uuid_value}")
     print(f"   SHORT-NAME extraction: {name_value}")
-    print(f"   Primary identifier priority: {'✓' if uuid_value else '✗'}")
+    print(f"   Primary identifier priority: {'✓' if name_value else '✗'}")
 
 
 if __name__ == "__main__":
     demonstrate_partial_model_merge()
     test_standard_compliance()
-    print("\n🎉 AUTOSAR Partial Model Merge demonstration completed!")
+    print("\n🎉 dSpace SystemDesk Compatible Merge demonstration completed!")
